@@ -1,0 +1,29 @@
+version: '3'
+
+networks:
+  appnet:
+
+volumes:
+  appvol:
+
+services:
+  nwdb:
+    image: maxchong29/mynorthwindapp:latest
+    build:
+      context: ./database
+    environment:
+      - MYSQL_ROOT_PASSWORD=changeit
+    networks:
+      - appnet
+    volumes:
+      - appvol:/var/lib/mysql
+  nwapp:
+    image: maxchong29/myserverapp:latest
+    build:
+        context: ./server
+    environment:
+      - DB_HOST=mydb
+    networks:         
+      - appnet
+    ports:
+      - 80:3000  
