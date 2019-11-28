@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nwdb-deploy
+  namespace: mynwdb
+  labels:
+    name: nwdb
+    version: v2
+spec:
+  # number of pods
+  replicas: 1
+  minReadySeconds: 60
+  selector:
+    matchLabels:
+      name: nwdb
+      version: v2
+  template:
+    # pod template
+    metadata:
+      name: nwdb-pod
+      labels:
+        name: nwdb
+        version: v2
+    spec: 
+      containers:
+      - name: nwdb-container
+        image: /mynorthwindapp:v2
+        imagePullPolicy: IfNotPresent
+        env:  
+        - name: DB_PASSWORD
+          valueFrom: 
+            secretKeyRef:
+              name: nwdbsecret
+              key: db_password
+        - name: DB_HOST
+          valueFrom:
+             configMapKeyRef:
+              name: nwdb-config
+              key: db_host
+        - name: DB_USER
+          valueFrom:
+             configMapKeyRef:
+              name: nwdb-config
+              key: db_user
+        - name: INSTANCE_IP_ADDRESS
+            valueFrom:
+              fieldref:
+                fieldpath: status.hostIP    
+        ports:
+        - name: nwapp-port
+          containerPort: 3000
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: nwapp-svc
+  namespace: mynwdb
+  labels:
+    name: nwapp-svc
+    version: v1
+spec:
+  type: LoadBalancer
+  selector: 
+    name: nwdb
+    version: v2
+  ports:
+    - name: http
+      port: 80
+      targetPort: mysql-port
+
+
+
