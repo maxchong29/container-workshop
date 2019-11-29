@@ -1,0 +1,23 @@
+
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+
+metadata:
+   name: myweather-vs
+
+spec:
+   hosts:
+   - "*"
+   gateways:
+   - myweather-gw
+   http:
+   - match:
+     - uri:
+        prefix: /
+     route:
+     - destination:
+        host: w-svc
+        port: 
+          number: 80
+   rewrite:
+        uri: /
